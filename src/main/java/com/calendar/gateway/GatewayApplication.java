@@ -25,7 +25,7 @@ public class GatewayApplication {
 
         return builder.routes()
                 .route("calendar-users-api", r -> r
-                        .path("/api/v1/users/**")
+                        .path("/api/v1/users/**", "/api/v1/profile/**")
                         .filters(f -> f
                                 .filter(identityTranslatorFilterFactory.apply(new IdentityTranslatorGatewayFilterFactory.Config()))
                                 .stripPrefix(2)
