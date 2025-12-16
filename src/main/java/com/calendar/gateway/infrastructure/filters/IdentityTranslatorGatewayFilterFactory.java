@@ -12,9 +12,7 @@ import reactor.core.publisher.Mono;
 @Component
 public class IdentityTranslatorGatewayFilterFactory extends AbstractGatewayFilterFactory<IdentityTranslatorGatewayFilterFactory.Config> {
 
-    private static final String INTERNAL_ID_HEADER = "X-User-Internal-Id";
-
-    private static final String KEYCLOAK_SUB = "X-Keyclaok-Sub";
+    private static final String INTERNAL_ID_HEADER = "X-Internal-User-Id";
 
     private final IdentityTranslatorService identityTranslatorService;
 
@@ -45,10 +43,7 @@ public class IdentityTranslatorGatewayFilterFactory extends AbstractGatewayFilte
                                     return chain.filter(exchange.mutate().request(modifiedRequest).build());
                                 })
                                 .onErrorResume(e -> this.onError(exchange, "Utilisateur non trouvé ou erreur de service : " + e.getMessage(), HttpStatus.FORBIDDEN));
-                    })
-                    .switchIfEmpty(
-                            this.onError(exchange, "Jeton JWT (Principal) manquant ou invalide.", HttpStatus.UNAUTHORIZED)
-                    );
+                    });
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {

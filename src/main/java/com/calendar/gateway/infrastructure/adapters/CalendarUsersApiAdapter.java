@@ -2,6 +2,7 @@ package com.calendar.gateway.infrastructure.adapters;
 
 import com.calendar.gateway.domain.ports.CalendarUsersApiPort;
 import com.calendar.gateway.infrastructure.api.CalendarUsersApi;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -17,11 +18,8 @@ public class CalendarUsersApiAdapter implements CalendarUsersApiPort {
     @Override
     public Mono<Long> fetchInternalUserId(String keycloakId) {
 
-        return calendarUsersApi.readProfile(keycloakId)
-                .map(response -> {
-                    assert response.getBody() != null;
-                    return response.getBody().id();
-                })
+        return calendarUsersApi.resolveInternalUserId(keycloakId)
+                .map(ResponseEntity::getBody)
                 .doOnError(throwable -> throwable.printStackTrace());
     }
 }
