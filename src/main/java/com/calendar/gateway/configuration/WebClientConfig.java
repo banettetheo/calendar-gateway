@@ -57,6 +57,6 @@ public class WebClientConfig {
 
                         return next.exchange(filteredRequest);
                     })
-                    .switchIfEmpty(Mono.defer(() -> next.exchange(request))); // Utilisation de Mono.defer pour l'exécution paresseuse
+                    .switchIfEmpty(Mono.defer(() -> next.exchange(request)));
     }
 }
