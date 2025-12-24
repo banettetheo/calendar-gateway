@@ -32,6 +32,14 @@ public class GatewayApplication {
                         )
                         .uri("http://localhost:8082")
                 )
+                .route("calendar-social-api", r -> r
+                        .path("/api/v1/social-service/**")
+                        .filters(f -> f
+                                .filter(identityTranslatorFilterFactory.apply(new IdentityTranslatorGatewayFilterFactory.Config()))
+                                .stripPrefix(2)
+                        )
+                        .uri("http://localhost:8083")
+                )
                 .build();
     }
 }
