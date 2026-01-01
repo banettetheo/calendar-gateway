@@ -1,12 +1,16 @@
 package com.calendar.gateway.infrastructure.adapters;
 
 import com.calendar.gateway.domain.ports.RedisIdentityCachePort;
+import com.calendar.gateway.exception.TechnicalErrorCode;
+import com.calendar.gateway.exception.TechnicalException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
+@Slf4j
 @Component
 public class RedisIdentityCacheAdapter implements RedisIdentityCachePort {
 
@@ -27,6 +31,10 @@ public class RedisIdentityCacheAdapter implements RedisIdentityCachePort {
     public Mono<Void> saveMapping(String keycloakId, Long internalId) {
         return reactiveRedisTemplate.opsForValue()
                 .set(keycloakId, internalId, TTL)
+                .onErrorMap(e -> {
+                    log.error("Une erreur est survenue lors de l'enregistrement de la mise en cache : {}", e.getMessage());
+                    return new TechnicalException(TechnicalErrorCode.REDIS_ERROR);
+                })
                 .then();
     }
 }

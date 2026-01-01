@@ -1,11 +1,15 @@
 package com.calendar.gateway.infrastructure.adapters;
 
 import com.calendar.gateway.domain.ports.CalendarUsersApiPort;
+import com.calendar.gateway.exception.TechnicalErrorCode;
+import com.calendar.gateway.exception.TechnicalException;
 import com.calendar.gateway.infrastructure.api.CalendarUsersApi;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 public class CalendarUsersApiAdapter implements CalendarUsersApiPort {
 
@@ -19,7 +23,10 @@ public class CalendarUsersApiAdapter implements CalendarUsersApiPort {
     public Mono<Long> fetchInternalUserId(String keycloakId) {
 
         return calendarUsersApi.resolveInternalUserId(keycloakId)
-                .map(ResponseEntity::getBody)
-                .doOnError(throwable -> throwable.printStackTrace());
+                .mapNotNull(ResponseEntity::getBody)
+                .onErrorMap(e -> {
+                    log.error("Une erreur s'est produite lors de la récupération de l'identifiant interne de l'utilisateur : {}", e.getMessage());
+                    return new TechnicalException(TechnicalErrorCode.USER_API_ERROR);
+                });
     }
 }
