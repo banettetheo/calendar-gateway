@@ -24,9 +24,9 @@ public class CalendarUsersApiAdapter implements CalendarUsersApiPort {
 
         return calendarUsersApi.resolveInternalUserId(keycloakId)
                 .mapNotNull(ResponseEntity::getBody)
-                .onErrorMap(e -> {
+                .onErrorResume(e -> {
                     log.error("Une erreur s'est produite lors de la récupération de l'identifiant interne de l'utilisateur : {}", e.getMessage());
-                    return new TechnicalException(TechnicalErrorCode.USER_API_ERROR);
+                    return Mono.error(e);
                 });
     }
 }

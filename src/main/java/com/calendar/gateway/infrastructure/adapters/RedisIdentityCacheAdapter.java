@@ -24,7 +24,11 @@ public class RedisIdentityCacheAdapter implements RedisIdentityCachePort {
 
     @Override
     public Mono<Long> findByExternalId(String keycloakId) {
-        return reactiveRedisTemplate.opsForValue().get(keycloakId);
+        return reactiveRedisTemplate.opsForValue().get(keycloakId)
+                .onErrorMap(e -> {
+                    log.error("Une erreur est survenue lors de la récupération du cache : {}", e.getMessage());
+                    return new TechnicalException(TechnicalErrorCode.REDIS_ERROR);
+                });
     }
 
     @Override

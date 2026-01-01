@@ -1,24 +1,33 @@
 package com.calendar.gateway.infrastructure.filters;
 
 import com.calendar.gateway.domain.services.IdentityTranslatorService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
 
+@Slf4j
 @Component
 public class IdentityTranslatorGatewayFilterFactory extends AbstractGatewayFilterFactory<IdentityTranslatorGatewayFilterFactory.Config> {
 
     private static final String INTERNAL_ID_HEADER = "X-Internal-User-Id";
 
     private final IdentityTranslatorService identityTranslatorService;
+    private final ObjectMapper objectMapper;
 
-    public IdentityTranslatorGatewayFilterFactory(IdentityTranslatorService identityTranslatorService) {
+
+    public IdentityTranslatorGatewayFilterFactory(IdentityTranslatorService identityTranslatorService, ObjectMapper objectMapper) {
         super(Config.class);
         this.identityTranslatorService = identityTranslatorService;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -30,7 +39,9 @@ public class IdentityTranslatorGatewayFilterFactory extends AbstractGatewayFilte
                         String externalId = principal.getName();
 
                         if (externalId == null || externalId.isEmpty()) {
-                            return this.onError(exchange, "Impossible d'extraire l'ID externe (SUB) de l'identité.", HttpStatus.UNAUTHORIZED);
+                            log.error("Impossible d'extraire l'ID externe (SUB) de l'identité.");
+                            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                            return exchange.getResponse().setComplete();
                         }
 
                         return identityTranslatorService.getInternalId(externalId)
@@ -42,13 +53,25 @@ public class IdentityTranslatorGatewayFilterFactory extends AbstractGatewayFilte
 
                                     return chain.filter(exchange.mutate().request(modifiedRequest).build());
                                 })
-                                .onErrorResume(e -> this.onError(exchange, "Utilisateur non trouvé ou erreur de service : " + e.getMessage(), HttpStatus.FORBIDDEN));
-                    });
-    }
+                                .onErrorResume(WebClientResponseException.class, ex -> {
+                                    ServerHttpResponse response = exchange.getResponse();
+                                    response.setStatusCode(ex.getStatusCode());
 
-    private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
-        exchange.getResponse().setStatusCode(httpStatus);
-        return exchange.getResponse().setComplete();
+                                    if (ex.getHeaders() != null) {
+                                        response.getHeaders().putAll(ex.getHeaders());
+                                        response.getHeaders().remove(HttpHeaders.CONTENT_LENGTH);
+                                    }
+
+                                    byte[] responseBody = ex.getResponseBodyAsByteArray();
+                                    if (responseBody != null && responseBody.length > 0) {
+                                        DataBuffer buffer = response.bufferFactory().wrap(responseBody);
+                                        return response.writeWith(Mono.just(buffer));
+                                    } else {
+                                        return response.setComplete();
+                                    }
+                                });
+
+                    });
     }
 
     public static class Config {
