@@ -1,9 +1,7 @@
-package com.calendar.gateway.infrastructure.adapters;
+package com.calendar.gateway.infrastructure.client.adapters;
 
-import com.calendar.gateway.domain.ports.CalendarUsersApiPort;
-import com.calendar.gateway.exception.TechnicalErrorCode;
-import com.calendar.gateway.exception.TechnicalException;
-import com.calendar.gateway.infrastructure.api.CalendarUsersApi;
+import com.calendar.gateway.domain.ports.UsersClient;
+import com.calendar.gateway.infrastructure.client.api.CalendarUsersApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -11,11 +9,11 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class CalendarUsersApiAdapter implements CalendarUsersApiPort {
+public class UsersApiAdapter implements UsersClient {
 
     private final CalendarUsersApi calendarUsersApi;
 
-    public CalendarUsersApiAdapter(CalendarUsersApi calendarUsersApi) {
+    public UsersApiAdapter(CalendarUsersApi calendarUsersApi) {
         this.calendarUsersApi = calendarUsersApi;
     }
 

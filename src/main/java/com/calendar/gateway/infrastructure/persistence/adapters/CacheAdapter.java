@@ -1,6 +1,6 @@
-package com.calendar.gateway.infrastructure.adapters;
+package com.calendar.gateway.infrastructure.persistence.adapters;
 
-import com.calendar.gateway.domain.ports.RedisIdentityCachePort;
+import com.calendar.gateway.domain.ports.CacheRepository;
 import com.calendar.gateway.exception.TechnicalErrorCode;
 import com.calendar.gateway.exception.TechnicalException;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +12,13 @@ import java.time.Duration;
 
 @Slf4j
 @Component
-public class RedisIdentityCacheAdapter implements RedisIdentityCachePort {
+public class CacheAdapter implements CacheRepository {
 
     private final ReactiveRedisTemplate<String, Long> reactiveRedisTemplate;
 
     private static final Duration TTL = Duration.ofHours(1);
 
-    public RedisIdentityCacheAdapter(ReactiveRedisTemplate<String, Long> reactiveRedisTemplate) {
+    public CacheAdapter(ReactiveRedisTemplate<String, Long> reactiveRedisTemplate) {
         this.reactiveRedisTemplate = reactiveRedisTemplate;
     }
 

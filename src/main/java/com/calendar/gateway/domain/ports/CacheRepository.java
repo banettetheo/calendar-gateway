@@ -2,7 +2,7 @@ package com.calendar.gateway.domain.ports;
 
 import reactor.core.publisher.Mono;
 
-public interface RedisIdentityCachePort {
+public interface CacheRepository {
 
     Mono<Long> findByExternalId(String keycloakId);
 

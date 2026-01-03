@@ -1,6 +1,6 @@
 package com.calendar.gateway.configuration;
 
-import com.calendar.gateway.infrastructure.api.CalendarUsersApi;
+import com.calendar.gateway.infrastructure.client.api.CalendarUsersApi;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

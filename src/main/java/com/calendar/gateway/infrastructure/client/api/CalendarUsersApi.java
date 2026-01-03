@@ -1,4 +1,4 @@
-package com.calendar.gateway.infrastructure.api;
+package com.calendar.gateway.infrastructure.client.api;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;

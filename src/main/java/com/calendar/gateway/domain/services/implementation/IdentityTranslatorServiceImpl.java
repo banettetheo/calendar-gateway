@@ -1,27 +1,27 @@
 package com.calendar.gateway.domain.services.implementation;
 
-import com.calendar.gateway.domain.ports.CalendarUsersApiPort;
-import com.calendar.gateway.domain.ports.RedisIdentityCachePort;
+import com.calendar.gateway.domain.ports.UsersClient;
+import com.calendar.gateway.domain.ports.CacheRepository;
 import com.calendar.gateway.domain.services.IdentityTranslatorService;
 import reactor.core.publisher.Mono;
 
 public class IdentityTranslatorServiceImpl implements IdentityTranslatorService {
 
-    private final CalendarUsersApiPort calendarUsersApiPort;
-    private final RedisIdentityCachePort redisIdentityCachePort;
+    private final UsersClient usersClient;
+    private final CacheRepository cacheRepository;
 
-    public IdentityTranslatorServiceImpl(CalendarUsersApiPort calendarUsersApiPort, RedisIdentityCachePort redisIdentityCachePort) {
-        this.calendarUsersApiPort = calendarUsersApiPort;
-        this.redisIdentityCachePort = redisIdentityCachePort;
+    public IdentityTranslatorServiceImpl(UsersClient usersClient, CacheRepository cacheRepository) {
+        this.usersClient = usersClient;
+        this.cacheRepository = cacheRepository;
     }
 
     @Override
     public Mono<Long> getInternalId(String keycloakId) {
-        return redisIdentityCachePort.findByExternalId(keycloakId)
+        return cacheRepository.findByExternalId(keycloakId)
                 .switchIfEmpty(
-                        calendarUsersApiPort.fetchInternalUserId(keycloakId)
+                        usersClient.fetchInternalUserId(keycloakId)
                                 .flatMap(internalId ->
-                                        redisIdentityCachePort.saveMapping(keycloakId, internalId)
+                                        cacheRepository.saveMapping(keycloakId, internalId)
                                                 .thenReturn(internalId)
                                 )
                 );
