@@ -10,14 +10,20 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 public class GatewayApplication {
 
-	public static void main(String[] args) {
+    private final IdentityTranslatorGatewayFilterFactory identityTranslatorFilterFactory;
+
+    public GatewayApplication(IdentityTranslatorGatewayFilterFactory identityTranslatorFilterFactory) {
+        this.identityTranslatorFilterFactory = identityTranslatorFilterFactory;
+    }
+
+    public static void main(String[] args) {
 		SpringApplication.run(GatewayApplication.class, args);
 	}
 
 	@Bean
     public RouteLocator configureRoute(RouteLocatorBuilder builder, IdentityTranslatorGatewayFilterFactory identityTranslatorFilterFactory) {
         return builder.routes()
-                .route("calendar-core-api", r -> r.path("/api/v1/core-service/**")
+                .route("calendar-users-api", r -> r.path("/api/v1/user-service/**")
                         .filters(f -> f
                                 .filter(identityTranslatorFilterFactory.apply(new IdentityTranslatorGatewayFilterFactory.Config()))
                                 .stripPrefix(2)
