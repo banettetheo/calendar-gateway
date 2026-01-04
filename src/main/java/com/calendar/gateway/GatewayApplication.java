@@ -41,6 +41,15 @@ public class GatewayApplication {
                         )
                         .uri("http://localhost:8083")
                 )
+                .route("calendar-chat-api", r -> r
+                        .path("/api/v1/chat-service/**")
+                        .filters(f -> f
+                                .filter(identityTranslatorFilterFactory.apply(new IdentityTranslatorGatewayFilterFactory.Config()))
+                                .stripPrefix(2)
+                                .retry(3)
+                        )
+                        .uri("http://localhost:8084")
+                )
                 .build();
     }
 }
